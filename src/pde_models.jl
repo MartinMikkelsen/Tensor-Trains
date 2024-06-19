@@ -1,6 +1,84 @@
 using LinearAlgebra
 
 """
+1D discrete gradient matrix
+"""
+function ∇_matrix(n)
+  G = zeros(Float64, n, n)
+  for i in 1:n-1
+    G[i, i] = 1.0
+    G[i, i+1] = -1.0
+  end
+  G[n, n] = 1.0
+  return G
+end
+
+"""
+n^d discrete gradient in TTO format with rank 2 of
+G = g ⊗ id ⊗ … ⊗ id + ⋯ + id ⊗ … ⊗ id ⊗ g
+"""
+function ∇_tto(n, d; g=[∇_matrix(n) for i in 1:d])
+  G_vec = Vector{Array{Float64,4}}(undef, d)
+  rks = vcat(1, 2ones(Int64, d-1), 1)
+  
+  # first TTO core
+  G_vec[1] = zeros(n, n, 1, 2)
+  G_vec[1][:,:,1,1] = g[1]
+  G_vec[1][:,:,1,2] = Matrix{Float64}(I, n, n)
+  
+  for i in 2:d-1
+    G_vec[i] = zeros(n, n, 2, 2)
+    G_vec[i][:,:,1,1] = Matrix{Float64}(I, n, n)
+    G_vec[i][:,:,2,1] = g[i]
+    G_vec[i][:,:,2,2] = Matrix{Float64}(I, n, n)
+  end
+  
+  G_vec[d] = zeros(n, n, 2, 1)
+  G_vec[d][:,:,1,1] = Matrix{Float64}(I, n, n)
+  G_vec[d][:,:,2,1] = g[d]
+  
+  return TToperator{Float64, d}(d, G_vec, Tuple(n*ones(Int64, d)), rks, zeros(Int64, d))
+end
+
+"""
+1D discrete shift matrix
+"""
+function shift_matrix(n)
+  S = zeros(Float64, n, n)
+  for i in 1:n-1
+    S[i, i+1] = 1.0
+  end
+  return S
+end
+
+"""
+n^d discrete shift in TTO format with rank 2 of
+S = s ⊗ id ⊗ … ⊗ id + ⋯ + id ⊗ … ⊗ id ⊗ s
+"""
+function shift_tto(n, d; s=[shift_matrix(n) for i in 1:d])
+  S_vec = Vector{Array{Float64,4}}(undef, d)
+  rks = vcat(1, 2ones(Int64, d-1), 1)
+  
+  # first TTO core
+  S_vec[1] = zeros(n, n, 1, 2)
+  S_vec[1][:,:,1,1] = s[1]
+  S_vec[1][:,:,1,2] = Matrix{Float64}(I, n, n)
+  
+  for i in 2:d-1
+    S_vec[i] = zeros(n, n, 2, 2)
+    S_vec[i][:,:,1,1] = Matrix{Float64}(I, n, n)
+    S_vec[i][:,:,2,1] = s[i]
+    S_vec[i][:,:,2,2] = Matrix{Float64}(I, n, n)
+  end
+  
+  S_vec[d] = zeros(n, n, 2, 1)
+  S_vec[d][:,:,1,1] = Matrix{Float64}(I, n, n)
+  S_vec[d][:,:,2,1] = s[d]
+  
+  return TToperator{Float64, d}(d, S_vec, Tuple(n*ones(Int64, d)), rks, zeros(Int64, d))
+end
+
+"""
 1d-discrete Laplacian
 """
 function Δ(n)
@@ -49,3 +127,5 @@ function perturbed_Δ_tto(n,d;hermitian=true,r=1,rks=ones(Int64,d+1))
   end
   return H
 end
+
+println(∇_tto(4,4))

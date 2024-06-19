@@ -189,3 +189,41 @@ function outer_product(x::TTvector{T,N},y::TTvector{T,N}) where {T<:Number,N}
     end
     return TToperator{T,N}(x.N,Y,x.ttv_dims,x.ttv_rks.*y.ttv_rks,zeros(Int64,x.N))
 end
+
+"""
+Hadamard product of two TTvector
+"""
+function hadamard(x::TTvector{T,N}, y::TTvector{T,N}) where {T<:Number,N}
+    @assert x.ttv_dims == y.ttv_dims "Incompatible dimensions"
+    
+    d = x.N
+    ttv_vec = Array{Array{T,3},1}(undef, d)
+    
+    for k in 1:d
+        x_core = x.ttv_vec[k]
+        y_core = y.ttv_vec[k]
+        
+        # Match the TT ranks
+        common_r1 = max(size(x_core, 2), size(y_core, 2))
+        common_r2 = max(size(x_core, 3), size(y_core, 3))
+        
+        x_core_resized = zeros(T, size(x_core, 1), common_r1, common_r2)
+        y_core_resized = zeros(T, size(y_core, 1), common_r1, common_r2)
+        
+        x_core_resized[:, 1:size(x_core, 2), 1:size(x_core, 3)] .= x_core
+        y_core_resized[:, 1:size(y_core, 2), 1:size(y_core, 3)] .= y_core
+        
+        result_core = zeros(T, size(x_core_resized, 1), size(x_core_resized, 2), size(x_core_resized, 3))
+        
+        @inbounds begin
+            @tensor result_core[i, α, β] := x_core_resized[i, α, β] * y_core_resized[i, α, β]
+        end
+        
+        ttv_vec[k] = result_core
+    end
+    
+    common_rks = [size(ttv_vec[i], 2) for i in 1:d]
+    common_rks = [1; common_rks; 1]
+    
+    return TTvector{T,N}(d, ttv_vec, x.ttv_dims, common_rks, x.ttv_ot)
+end
