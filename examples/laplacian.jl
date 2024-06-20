@@ -4,16 +4,16 @@ using LinearAlgebra
 """
 test run
 """
-const n = 4
-const d = 4
+n = 4
+d = 4
 
 #b_tt = b_ttv(n,d)
-const r = 2
-const b_tt = rand_tt(n*ones(Int64,d),vcat(1,r*ones(Int64,d-1),1))
-const H_mpo = Δ_tto(n,d)
+r = 2
+b_tt = rand_tt(n*ones(Int64,d),vcat(1,r*ones(Int64,d-1),1))
+H_mpo = Δ_tto(n,d)
 
-const α_opt = 2/(d*eigmax(Δ(n))+d*eigmin(Δ(n)))
-const x_tt, res = gradient_fixed_step(H_mpo,b_tt,α_opt,Imax=4,i_trunc=2)
+α_opt = 2/(d*eigmax(Δ(n))+d*eigmin(Δ(n)))
+x_tt, res = gradient_fixed_step(H_mpo,b_tt,α_opt,Imax=4,i_trunc=2)
 
 """
 Real run

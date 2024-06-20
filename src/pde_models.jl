@@ -127,5 +127,3 @@ function perturbed_Δ_tto(n,d;hermitian=true,r=1,rks=ones(Int64,d+1))
   end
   return H
 end
-
-println(∇_tto(4,4))
