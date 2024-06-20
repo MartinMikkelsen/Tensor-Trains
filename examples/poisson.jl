@@ -5,6 +5,8 @@ using SparseArrays
 using Distributed
 using TensorOperations
 
+include("../src/utils.jl")
+
 function right_hand_side(cores::Int)::Array{Float64,2}
     points = 2^cores
     a, b, d, e = 0, 1, 0, 1
@@ -72,25 +74,6 @@ function solve_Poisson(cores::Int)::Array{Float64,2}
 
     y = ttv_to_tensor(x_tt)
     reshape(y, 2^cores, 2^cores)
-end
-
-function plot_solution(cores,solve_equation;title="Solution on [0,1] Grid")
-    solution = solve_equation
-
-    # Calculate the number of points and generate linearly spaced coordinates
-    total_points = 2^cores
-    x = LinRange(0, 1, total_points)
-    y = LinRange(0, 1, total_points)
-
-    # Plot the solution using a heatmap where x and y coordinates specify the grid
-    heatmap_plot = heatmap(x, y, solution,
-                           cbar=true,
-                           xlabel="x",
-                           ylabel="y",
-                           title=title)
-
-    # Display the plot
-    display(heatmap_plot)
 end
 
 K = solve_Poisson(7)
