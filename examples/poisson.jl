@@ -17,35 +17,12 @@ function right_hand_side(cores::Int)::Array{Float64,2}
     reshape(f .- bound, points, points)
 end
 
-# Optimized Laplacian matrix construction
-function Lap(n::Integer, d::Integer)::SparseMatrixCSC{Float64,Int64}
-    rows, cols, vals = Vector{Int64}(), Vector{Int64}(), Vector{Float64}()
-    @inbounds for j in 0:n^d-1
-        J_dig = digits(j, base=n, pad=d)
-        push!(rows, j+1); push!(cols, j+1); push!(vals, 2d)
-        for k in 0:d-1
-            if J_dig[k+1] == 0
-                neighbor = j + n^k
-            elseif J_dig[k+1] == n-1
-                neighbor = j - n^k
-            else
-                push!(rows, j+1); push!(cols, j+1 + n^k); push!(vals, -1)
-                neighbor = j - n^k
-            end
-            push!(rows, j+1); push!(cols, neighbor+1); push!(vals, -1)
-        end
-    end
-    sparse(rows, cols, vals, n^d, n^d)
-end
-
-# Function f
 function source_term(x, y, points)::Array{Float64,2}
     X = repeat(x', points, 1)
     Y = repeat(y, 1, points)
     π^2 * (1 .+ 4 .* Y .^ 2) .* sin.(π .* X) .* sin.(π .* Y .^ 2) + 2 * π * sin.(π .* X) .* cos.(π .* Y .^ 2)
 end
 
-# Boundary function
 function boundary_term(x, y, points)::Array{Float64,2}
 
     bc_left(y) = 2*exp(y)
@@ -53,7 +30,6 @@ function boundary_term(x, y, points)::Array{Float64,2}
     bc_bottom(x) = exp(x)
     bc_top(x) = sin(x)
     
-
     b = zeros(points, points)
     b[1, :] .= bc_bottom.(x)
     b[end, :] .= bc_top.(x)
@@ -64,7 +40,7 @@ end
 
 function solve_Poisson(cores::Int)::Array{Float64,2}
     reshape_dims = ntuple(_ -> 2, 2 * cores * 2)
-    L = Lap(2^cores, 2)
+    L = Laplace_tensor(2^cores, 2)
     L_TT = tto_decomp(reshape(Array(L), reshape_dims))
     b_dims = repeat([2], 2 * cores)
     b = reshape(right_hand_side(cores), b_dims...)

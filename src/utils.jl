@@ -1,7 +1,6 @@
 using Plots 
 using LinearAlgebra
 using BenchmarkTools
-using TensorTrains
 using SparseArrays
 using TensorOperations
 using Base.Threads

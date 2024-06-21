@@ -81,7 +81,7 @@ end
 """
 1d-discrete Laplacian
 """
-function Δ(n)
+function Δ_matrix(n)
   return Matrix(SymTridiagonal(2ones(n),-ones(n-1)))
 end 
 
@@ -89,7 +89,7 @@ end
 n^d discrete Laplacian in TTO format with rank 2 of
 H = h ⊗ id ⊗ … ⊗ id + ⋯ + id ⊗ ⋯ ⊗ id ⊗ h
 """
-function Δ_tto(n,d;h=[Δ(n) for i in 1:d])
+function Δ_tto(n,d;h=[Δ_matrix(n) for i in 1:d])
   H_vec = Vector{Array{Float64,4}}(undef,d)
   rks = vcat(1,2ones(Int64,d-1),1)
   # first TTO core

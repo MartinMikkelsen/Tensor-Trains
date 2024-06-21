@@ -1,6 +1,6 @@
 using SparseArrays
 using IterativeSolvers
-
+using Test
 struct sparsetensor_vec
     # dims is the array of dimensions of the tensor
     dims :: Array{Int64}
@@ -245,6 +245,26 @@ function Lap_sp(n::Integer, d::Integer)
 	J = J[J .!= 0]
 	V = V[V .!= 0]
 	return sparse(I , J, V, n^d, n^d)
+end
+
+function Laplace_tensor(n::Integer, d::Integer)::SparseMatrixCSC{Float64,Int64}
+    rows, cols, vals = Vector{Int64}(), Vector{Int64}(), Vector{Float64}()
+    @inbounds for j in 0:n^d-1
+        J_dig = digits(j, base=n, pad=d)
+        push!(rows, j+1); push!(cols, j+1); push!(vals, 2d)
+        for k in 0:d-1
+            if J_dig[k+1] == 0
+                neighbor = j + n^k
+            elseif J_dig[k+1] == n-1
+                neighbor = j - n^k
+            else
+                push!(rows, j+1); push!(cols, j+1 + n^k); push!(vals, -1)
+                neighbor = j - n^k
+            end
+            push!(rows, j+1); push!(cols, neighbor+1); push!(vals, -1)
+        end
+    end
+    sparse(rows, cols, vals, n^d, n^d)
 end
 
 """

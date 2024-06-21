@@ -39,4 +39,7 @@ export ttrand_rounding
 include("FCIDUMP.jl")
 export read_electron_integral_tensors,read_electron_integral_tensors_nosymmetry
 
+include("sptensors.jl")
+export Laplace_tensor
+
 end
