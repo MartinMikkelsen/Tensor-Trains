@@ -42,4 +42,7 @@ export read_electron_integral_tensors,read_electron_integral_tensors_nosymmetry
 include("sptensors.jl")
 export Laplace_tensor
 
+include("tt_interpolations.jl")
+export chebyshev_lobatto_nodes, lagrange_basis, interpolating_qtt, interpolate_qtt_at_dyadic_points
+
 end

@@ -13,7 +13,10 @@ H = \sum_{i,j} h_{ij} (a_i^\dagger a_j + c.c.) +  \sum_{i,j,k,l} V_{ijkl} (a_i^\
 $$
 
 - compute ground-states of the 1D or 2D Hubbard model (with open or periodic boundary conditions)
-
+- interpolation methods based on [[2]](#2)
 ## References
 <a id="1">[1]</a> 
 Holtz, Sebastian, Thorsten Rohwedder, and Reinhold Schneider. "The alternating linear scheme for tensor optimization in the tensor train format." SIAM Journal on Scientific Computing 34.2 (2012): A683-A713.
+
+<a id="2">[2]</a> 
+Michael Lindsey. "Multiscale interpolative construction of quantized tensor trains" https://arxiv.org/pdf/2311.12554
