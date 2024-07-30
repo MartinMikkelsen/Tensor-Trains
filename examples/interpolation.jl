@@ -1,4 +1,3 @@
-using Plots
 using TensorTrains
 
 f = x -> sin(x/3)+exp(-5*x)*cos(100*x)^4

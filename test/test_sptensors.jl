@@ -1,5 +1,3 @@
-include("sptensors.jl")
-
 using Test
 
 @testset "sptensors" begin

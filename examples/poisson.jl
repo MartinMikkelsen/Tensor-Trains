@@ -1,5 +1,4 @@
 using LinearAlgebra
-using BenchmarkTools
 using Plots
 using SparseArrays
 using Distributed

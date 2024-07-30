@@ -3,8 +3,6 @@ using Plots
 using SparseArrays
 using TensorTrains
 
-include("../src/utils.jl")
-
 function right_hand_side(cores::Int64)::Array{Float64,2}
     points = 2^cores
     a, b, d, e = 0, 1, 0, 1
