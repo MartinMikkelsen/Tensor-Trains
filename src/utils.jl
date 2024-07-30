@@ -3,6 +3,7 @@ using LinearAlgebra
 using BenchmarkTools
 using SparseArrays
 using TensorOperations
+using TensorTrains
 using Base.Threads
 
 function plot_solution(cores,solve_equation;title="Solution on [0,1] Grid")

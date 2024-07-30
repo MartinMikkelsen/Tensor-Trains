@@ -4,8 +4,7 @@ using Plots
 using SparseArrays
 using Distributed
 using TensorOperations
-
-include("../src/utils.jl")
+using TensorTrains
 
 function right_hand_side(cores::Int)::Array{Float64,2}
     points = 2^cores
