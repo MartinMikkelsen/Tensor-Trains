@@ -501,3 +501,20 @@ function json_to_mpo(x)
 	end
 	return TToperator{eltype(eltype(vec)),x[:N]}(x[:N],vec,dims,rks,ot)
 end
+
+"""
+QTT representation of a tensor. 
+"""
+struct QTTvector{T<:Number,M} <: AbstractTTvector
+    N :: Int64  # number of dimensions in the QTT
+    qtt_vec :: Vector{Array{T,3}}  # TT cores in the QTT format
+    qtt_dims :: NTuple{M,Int64}  # dimensions of each core (must be powers of 2)
+    qtt_rks :: Vector{Int64}  # TT ranks for each core
+    qtt_ot :: Vector{Int64}  # orthogonality of the cores
+    
+    function QTTvector{T,M}(N,vec,dims,rks,ot) where {T,M}
+        @assert M isa Int64 "M must be an integer."
+        @assert all(x -> ispow2(x), dims) "All dimensions must be powers of 2 in QTT."
+        new{T,M}(N,vec,dims,rks,ot)
+    end
+end
