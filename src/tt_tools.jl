@@ -79,6 +79,155 @@ function Base.complex(v::TTvector{T,N}) where {T,N}
 	return TTvector{Complex{T},N}(v.N,complex(v.ttv_vec),v.ttv_dims,v.ttv_rks,v.ttv_ot)
 end
 
+
+function QTTvector(vec::Vector{<:Array{<:Number, 3}}, rks::Vector{Int64}, ot::Vector{Int64})
+    T = eltype(eltype(vec))
+    N = length(vec)
+    dims = ntuple(_ -> 2, N)  
+    for core in vec
+        @assert size(core, 1) == 2 "Each core must have physical dimension 2."
+    end
+    return TTvector{T, N}(N, vec, dims, rks, ot)
+end
+
+function is_qtt(tt::TTvector)
+    all(dim == 2 for dim in tt.ttv_dims)
+end
+
+function QTToperator(vec::Vector{Array{T,4}}, rks::Vector{Int64}, ot::Vector{Int64}) where {T}
+    N = length(vec)
+    dims = ntuple(_ -> 2, N)
+    for core in vec
+        @assert size(core, 1) == 2 && size(core, 2) == 2 "Each core must have physical dimension 2."
+    end
+    return QTToperator{T,N}(N, vec, rks, ot)
+end
+
+function is_qtt_operator(op::TToperator)
+    all(dim == 2 for dim in op.tto_dims)
+end
+
+function visualize(tt::TTvector)
+    N = tt.N
+    dims = collect(tt.ttv_dims)
+    ranks = tt.ttv_rks
+
+    max_rank_len = maximum(length.(string.(ranks)))
+    max_dim_len = maximum(length.(string.(dims)))
+
+    rwidth = max(max_rank_len, 2)  # Minimum width of 2 for readability
+    dwidth = max(max_dim_len, 1)
+
+    seg_length = rwidth + 6 + rwidth  # '-- C --' is 6 characters
+
+    line1 = lpad(string(ranks[1]), rwidth)
+    line2 = " " ^ length(line1)
+    line3 = " " ^ length(line1)
+
+    for i in 1:N
+        segment = "-- • --"
+        rank_right = lpad(string(ranks[i+1]), rwidth)
+        line1 *= segment * rank_right
+
+        position_C = length(line1) - rwidth - 3  # 'C' is 3 characters before the right rank
+
+        line2_len = length(line2)
+        spaces_needed = position_C - line2_len
+        line2 *= repeat(" ", spaces_needed-1) * "|"
+
+        dim_str = string(dims[i])
+        dim_len = length(dim_str)
+        line3_len = length(line3)
+        spaces_needed = position_C - line3_len - div(dim_len, 2)
+        line3 *= repeat(" ", spaces_needed-1) * dim_str
+    end
+
+    diagram = line1 * "\n" * line2 * "\n" * line3
+
+    println(diagram)
+end
+
+function visualize(tt::TToperator)
+    N = tt.N
+    dims = collect(tt.tto_dims)
+    ranks = tt.tto_rks
+
+    # Initialize top dimensions line (line0)
+    total_length = 0
+    line0_chars = []
+    positions_C = []
+
+    # Build the first line (ranks and nodes)
+    line1 = ""
+    for i in 1:N
+        # Create rank-node-rank segment
+        if i == 1
+            segment = " $(ranks[i])-- • --$(ranks[i+1])"
+        else
+            segment = "-- • --$(ranks[i+1])"
+        end
+        line1 *= segment
+
+        # Find the position of '•' in the segment
+        pos_C = total_length + findfirst(isequal('•'), segment)
+        push!(positions_C, pos_C)
+        total_length += length(segment)
+
+    end
+
+    # Top Dimensions (line0)
+    line0_chars = fill(' ', total_length)
+    for i in 1:N
+        pos_C = positions_C[i]
+        dim_str = "$(dims[i])"
+        dim_len = length(dim_str)
+
+        # Center dimension above the vertical line
+        start_pos = pos_C - div(dim_len, 2)
+        for j in 1:dim_len
+            idx = start_pos + j - 1
+            if idx >= 1 && idx <= total_length
+                line0_chars[idx] = dim_str[j]
+            end
+        end
+    end
+    line0 = String(line0_chars)
+
+    # Build the second line (vertical connections to top dimensions)
+    line2_chars = fill(' ', total_length)
+    for pos_C in positions_C
+        line2_chars[pos_C] = '|'
+    end
+    line2 = String(line2_chars)
+
+    # Reuse the vertical line for line3
+    line3 = line2
+
+    # Bottom Dimensions (line4)
+    line4_chars = fill(' ', total_length)
+    for i in 1:N
+        pos_C = positions_C[i]
+        dim_str = "$(dims[i])"
+        dim_len = length(dim_str)
+
+        # Center dimension under the vertical line
+        start_pos = pos_C - div(dim_len, 2)
+        for j in 1:dim_len
+            idx = start_pos + j - 1
+            if idx >= 1 && idx <= total_length
+                line4_chars[idx] = dim_str[j]
+            end
+        end
+    end
+    line4 = String(line4_chars)
+
+    # Combine all the lines
+    diagram = line0 * "\n" * line2 * "\n" * line1 * "\n" * line3 * "\n" * line4
+
+    # Display the diagram
+    println(diagram)
+end
+
 """
 returns a zero TTvector with dimensions `dims` and ranks `rks`
 """
@@ -502,19 +651,3 @@ function json_to_mpo(x)
 	return TToperator{eltype(eltype(vec)),x[:N]}(x[:N],vec,dims,rks,ot)
 end
 
-"""
-QTT representation of a tensor. 
-"""
-struct QTTvector{T<:Number,M} <: AbstractTTvector
-    N :: Int64  # number of dimensions in the QTT
-    qtt_vec :: Vector{Array{T,3}}  # TT cores in the QTT format
-    qtt_dims :: NTuple{M,Int64}  # dimensions of each core (must be powers of 2)
-    qtt_rks :: Vector{Int64}  # TT ranks for each core
-    qtt_ot :: Vector{Int64}  # orthogonality of the cores
-    
-    function QTTvector{T,M}(N,vec,dims,rks,ot) where {T,M}
-        @assert M isa Int64 "M must be an integer."
-        @assert all(x -> ispow2(x), dims) "All dimensions must be powers of 2 in QTT."
-        new{T,M}(N,vec,dims,rks,ot)
-    end
-end

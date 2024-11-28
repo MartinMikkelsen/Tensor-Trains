@@ -1,6 +1,6 @@
 module TensorTrains
 
-export TTvector,TToperator,ttv_decomp,tto_decomp,ttv_to_tensor,tto_to_tensor,zeros_tt,zeros_tto,rand_tt,rand_tto,tt_to_vidal,vidal_to_tensor,vidal_to_left_canonical, json_to_mps, json_to_mpo
+export TTvector,TToperator,QTTvector,QTToperator,ttv_decomp,tto_decomp,ttv_to_tensor,tto_to_tensor,zeros_tt,zeros_tto,rand_tt,rand_tto,tt_to_vidal,vidal_to_tensor,vidal_to_left_canonical, json_to_mps, json_to_mpo, is_qtt, is_qtt_operator,visualize
 include("tt_tools.jl")
 
 export *, +, dot, -, /, outer_product
@@ -30,10 +30,10 @@ include("pde_models.jl")
 export ttrand_rounding
 include("tt_randtools.jl")
 
-export chebyshev_lobatto_nodes, lagrange_basis, interpolating_qtt, interpolate_qtt_at_dyadic_points
+export chebyshev_lobatto_nodes, equally_spaced_nodes, legendre_nodes, get_nodes, lagrange_basis, interpolating_qtt, unfold, lagrange_rank_revealing
 include("tt_interpolations.jl")
 
-export plot_solution, benchmark, solve_bond_dimensions, plot_memory_usage
-include("utils.jl")
+export Δ_DD, Δ_NN, Δ_DN, Δ_ND, Δ_Periodic, Δ_tto, QTT_Tridiagonal_Toeplitz, ∇_DD, ∇_tto, Jacobian_tto, matricize, tt2qtt, χ, shift_tto
+include("tt_operators.jl")
 
 end

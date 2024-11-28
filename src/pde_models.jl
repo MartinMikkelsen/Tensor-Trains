@@ -51,32 +51,6 @@ function shift_matrix(n)
   return S
 end
 
-"""
-n^d discrete shift in TTO format with rank 2 of
-S = s ⊗ id ⊗ … ⊗ id + ⋯ + id ⊗ … ⊗ id ⊗ s
-"""
-function shift_tto(n, d; s=[shift_matrix(n) for i in 1:d])
-  S_vec = Vector{Array{Float64,4}}(undef, d)
-  rks = vcat(1, 2ones(Int64, d-1), 1)
-  
-  # first TTO core
-  S_vec[1] = zeros(n, n, 1, 2)
-  S_vec[1][:,:,1,1] = s[1]
-  S_vec[1][:,:,1,2] = Matrix{Float64}(I, n, n)
-  
-  for i in 2:d-1
-    S_vec[i] = zeros(n, n, 2, 2)
-    S_vec[i][:,:,1,1] = Matrix{Float64}(I, n, n)
-    S_vec[i][:,:,2,1] = s[i]
-    S_vec[i][:,:,2,2] = Matrix{Float64}(I, n, n)
-  end
-  
-  S_vec[d] = zeros(n, n, 2, 1)
-  S_vec[d][:,:,1,1] = Matrix{Float64}(I, n, n)
-  S_vec[d][:,:,2,1] = s[d]
-  
-  return TToperator{Float64, d}(d, S_vec, Tuple(n*ones(Int64, d)), rks, zeros(Int64, d))
-end
 
 """
 1d-discrete Laplacian
