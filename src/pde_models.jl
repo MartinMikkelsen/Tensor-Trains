@@ -40,17 +40,6 @@ function ∇_tto(n, d; g=[∇_matrix(n) for i in 1:d])
   return TToperator{Float64, d}(d, G_vec, Tuple(n*ones(Int64, d)), rks, zeros(Int64, d))
 end
 
-"""
-1D discrete shift matrix
-"""
-function shift_matrix(n)
-  S = zeros(Float64, n, n)
-  for i in 1:n-1
-    S[i, i+1] = 1.0
-  end
-  return S
-end
-
 
 """
 1d-discrete Laplacian

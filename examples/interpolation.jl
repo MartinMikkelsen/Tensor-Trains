@@ -1,5 +1,4 @@
 using CairoMakie
-using TensorTrains
 
 f = x -> cos(1 / (x^3+0.01)) + sin(π*x)
 cores = 10  
