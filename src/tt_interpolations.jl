@@ -185,17 +185,21 @@ function interpolating_qtt(
     return tn
 end
 
-"""
-Interpolate using the QTT at dyadic points.
+function unfold(qtt::TTvector{Float64})
+    full_tensor = ttv_to_tensor(qtt)
+    n = size(full_tensor, 1)
+    values = zeros(n)
 
-# Arguments
-- `qtt::TTvector{Float64}`: QTT representation.
-- `core::Int`: Number of cores in the QTT.
+    for i in 1:n
+        x = i - 1
+        index_bits = bitstring(x)[end-qtt.N+1:end]  # Binary representation
+        indices = [parse(Int, bit) + 1 for bit in index_bits]  # Indices for CartesianIndex
+        values[i] = full_tensor[CartesianIndex(indices...)]
+    end
+    values
+end
 
-# Returns
-- `Vector{Float64}`: Interpolated values at dyadic points.
-"""
-function unfold(qtt::TTvector{Float64}, core::Int)::Vector{Float64}
+function matricize(qtt::TTvector{Float64}, core::Int)::Vector{Float64}
     full_tensor = ttv_to_tensor(qtt)
     n = 2^core
     values = zeros(n)
