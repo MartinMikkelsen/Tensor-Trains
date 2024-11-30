@@ -190,29 +190,3 @@ function outer_product(x::TTvector{T,N},y::TTvector{T,N}) where {T<:Number,N}
     return TToperator{T,N}(x.N,Y,x.ttv_dims,x.ttv_rks.*y.ttv_rks,zeros(Int64,x.N))
 end
 
-"""
-Hadamard (element-wise) product of two TTvectors
-"""
-function ⊙(x::TTvector{T,N}, y::TTvector{T,N}) where {T<:Number,N}
-    @assert x.ttv_dims == y.ttv_dims "Incompatible dimensions"
-    d = x.N
-    ttv_vec = Array{Array{T,3},1}(undef,d)
-    rks = x.ttv_rks .* y.ttv_rks
-
-    @inbounds @threads for k in 1:d
-        ttv_vec[k] = zeros(T, x.ttv_dims[k], rks[k], rks[k+1])
-        for i in 1:x.ttv_dims[k]
-            for α in 1:x.ttv_rks[k]
-                for β in 1:x.ttv_rks[k+1]
-                    for γ in 1:y.ttv_rks[k]
-                        for δ in 1:y.ttv_rks[k+1]
-                            ttv_vec[k][i, (α-1)*y.ttv_rks[k] + γ, (β-1)*y.ttv_rks[k+1] + δ] =
-                                x.ttv_vec[k][i, α, β] * y.ttv_vec[k][i, γ, δ]
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return TTvector{T,N}(d, ttv_vec, x.ttv_dims, rks, zeros(Int64,d))
-end
