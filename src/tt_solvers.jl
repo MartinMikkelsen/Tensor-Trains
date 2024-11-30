@@ -182,21 +182,21 @@ function rand_struct_orth(r_A,r_X,r_b)
     return reshape(A,r_A*r_X,r_b)
 end
 
-function init(A::TToperator,b::TTvector,opt_rks)
-    @assert(A.tto_dims == b.ttv_dims,DimensionMismatch)
+function init(A::TToperator{T,M}, b::TTvector{T,M}, opt_rks::Vector{Int64}) where {T<:Number, M}
+    @assert(A.tto_dims == b.ttv_dims, DimensionMismatch)
     d = length(A.tto_dims)
-    opt_rks = vcat([1],opt_rks)
-    Q_list = Array{Array{Float64},1}(undef,d+1)
-    ttvec = Array{Array{Float64},1}(undef,d)
-    Q_list[1] = [1]
-    Q_list[d+1] = [1]
-    for k in 1:(d-1)
-        Q_list[k+1] = rand_struct_orth(A.tto_rks[k],opt_rks[k+1],b.ttv_rks[k])
+    opt_rks = vcat([1], opt_rks)
+    Q_list = Vector{Array{Float64, 2}}(undef, d + 1)
+    ttvec = Vector{Array{Float64, 3}}(undef, d)
+    Q_list[1] = [1.0]
+    Q_list[d + 1] = [1.0]
+    for k in 1:(d - 1)
+        Q_list[k + 1] = rand_struct_orth(A.tto_rks[k], opt_rks[k + 1], b.ttv_rks[k])
     end
     for k in 1:d
-        ttvec[k] = init_core(A.tto_vec[k],[A.tto_dims[k],opt_rks[k],opt_rks[k+1]],b.ttv_vec[k],Q_list[k],Q_list[k+1])
+        ttvec[k] = init_core(A.tto_vec[k], (A.tto_dims[k], opt_rks[k], opt_rks[k + 1]), b.ttv_vec[k], Q_list[k], Q_list[k + 1])
     end
-    return TTvector(ttvec,A.tto_dims,opt_rks[2:(d+1)],ones(Int64,d))
+    return TTvector{T, M}(d, ttvec, A.tto_dims, opt_rks[2:(d + 1)], ones(Int64, d))
 end
 
 #automatically determines the initial tt ranks

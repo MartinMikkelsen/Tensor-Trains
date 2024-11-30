@@ -79,7 +79,7 @@ function sppermutedims(x :: sparsetensor_vec, perm)
 			end
         end
         # Apply the permutation on the cartesian coordinates
-        for k = 1:length(perm)
+        for k = 1:eachindex(perm)
             x_katind_perm[x_ind, k] = x_katind[x_ind, perm[k]]
         end
         # Retransform the cartesian coordinates into vector indices
