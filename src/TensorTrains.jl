@@ -3,7 +3,7 @@ module TensorTrains
 export TTvector,TToperator,QTTvector,QTToperator,ttv_decomp,tto_decomp,ttv_to_tensor,tto_to_tensor,zeros_tt,zeros_tto,rand_tt,rand_tto,tt_to_vidal,vidal_to_tensor,vidal_to_left_canonical, json_to_mps, json_to_mpo, is_qtt, is_qtt_operator,visualize
 include("tt_tools.jl")
 
-export *, +, dot, -, /, outer_product
+export *, +, dot, -, /, outer_product, concatenate
 include("tt_operations.jl")
 
 export tt_svdvals, tt_rounding, tt_compression_par, orthogonalize, tt_up_rks, norm, r_and_d_to_rks

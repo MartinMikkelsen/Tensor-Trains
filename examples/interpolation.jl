@@ -1,13 +1,13 @@
 using CairoMakie
-using TensorTrains
 
 f = x -> cos(1 / (x^3+0.01)) 
+
 cores = 10  
 N = 150 
 
 qtt = interpolating_qtt(f, cores, N)
 qtt_rank_revealing = lagrange_rank_revealing(f, cores, N)
-
+visualize(qtt_rank_revealing)
 is_qtt(qtt)
 is_qtt(qtt_rank_revealing)
 

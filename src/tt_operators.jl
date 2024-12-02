@@ -351,41 +351,47 @@ function tt2qtt(tt_tensor::TToperator{T,N}, row_dims::Vector{Vector{Int}}, col_d
 
     qtt_tensor = TToperator{T,M}(N_qtt, qtt_cores, Tuple(tto_dims), tto_rks, tto_ot)
 
-    if is_qtt_operator(qtt_tensor)
-        return qtt_tensor
-    else
-        error("Final tensor train is not a QTT")
-    end
+    return qtt_tensor
 end
 
-function χ(c::Int, b1::Float64, b2::Float64)
-    if c < 2
-        throw(ArgumentError("c must be at least 2."))
-    end
-    H_vec = Vector{Array{Float64, 3}}(undef, c)
-    rks = vcat(1, fill(2, c - 1), 1)  
-    dims = Tuple(fill(2, c)) 
-
-    H_vec[1] = zeros(Float64, 2, 1, 2)  
-    H_vec[1][1, 1, 1] = b1  
-    H_vec[1][2, 1, 2] = 1  
-
-    if c == 2
-        H_vec[2] = zeros(Float64, 2, 2, 1)  
-        H_vec[2][1, 1, 1] = 1 
-        H_vec[2][2, 2, 1] = b2  
-        return TTvector{Float64, c}(c, H_vec, dims, rks, zeros(Int64, c))
+function χ(c::Int, b1::Int, b2::Int)
+    if c < 1
+        error("c must be at least 1")
     end
 
+    # Initialize TT ranks
+    r = [1; fill(1, c - 1); 1]  # Ranks: [1, 1, ..., 1]
+
+    # Initialize dimensions
+    dims = ntuple(_ -> 2, c)  # Physical dimensions: (2, 2, ..., 2)
+
+    # Initialize cores
+    cores = Vector{Array{Float64, 3}}(undef, c)
+
+    # First core: size (2, 1, 1)
+    cores[1] = zeros(Float64, 2, 1, 1)
+    cores[1][1, 1, 1] = b1  # Set the first element
+    cores[1][2, 1, 1] = 0.0
+
+    # Intermediate cores (do nothing since ranks are 1)
     for i in 2:(c - 1)
-        H_vec[i] = zeros(Float64, 2, 2, 2)  
-        H_vec[i][1, 1, 1] = 1  
-        H_vec[i][2, 2, 2] = 1
+        cores[i] = zeros(Float64, 2, 1, 1)
+        cores[i][1, 1, 1] = 1.0
+        cores[i][2, 1, 1] = 1.0
     end
 
-    H_vec[c] = zeros(Float64, 2, 2, 1)  
-    H_vec[c][1, 1, 1] = 1  
-    H_vec[c][2, 2, 1] = b2 
+    # Last core: size (2, 1, 1)
+    cores[c] = zeros(Float64, 2, 1, 1)
+    cores[c][1, 1, 1] = 0.0
+    cores[c][2, 1, 1] = b2  # Set the last element
 
-    return TTvector{Float64, c}(c, H_vec, dims, rks, zeros(Int64, c))
+    # Create and return the TTvector
+    return TTvector{Float64, c}(c, cores, dims, r, zeros(Int64, c))
 end
+
+# Example usage
+c = 5
+b1 = 1
+b2 = 1
+tt_op = χ(c, b1, b2)
+
