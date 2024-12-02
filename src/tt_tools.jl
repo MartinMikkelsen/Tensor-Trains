@@ -651,3 +651,49 @@ function json_to_mpo(x)
 	return TToperator{eltype(eltype(vec)),x[:N]}(x[:N],vec,dims,rks,ot)
 end
 
+function concatenate(tt::TTvector{T, other::TTvector{T,M}; overwrite::Bool=false) where {T<:Number, M}
+    # Copy if not overwriting
+    result = overwrite ? tt : copy(tt)
+    
+    # Check rank compatibility
+    if last(result.ttv_rks) != first(other.ttv_rks)
+        throw(DimensionMismatch("ranks do not match!"))
+    end
+    
+    # Extend vectors
+    append!(result.ttv_vec, other.ttv_vec)
+    
+    # Update dimensions
+    result.N = length(result.ttv_vec)
+    result.ttv_dims = (result.ttv_dims..., other.ttv_dims...)
+    
+    # Update ranks (excluding first rank as it's already included)
+    append!(result.ttv_rks, other.ttv_rks[2:end])
+    
+    # Update orthogonality indicators
+    append!(result.ttv_ot, other.ttv_ot)
+    
+    return result
+end
+
+
+dims1 = (2, 2)
+ranks1 = [1, 2, 1]
+cores1 = [
+    reshape([1.0, 2.0, 3.0, 4.0], (2, 1, 2)),
+    reshape([1.0, 2.0, 3.0, 4.0], (2, 2, 1))
+]
+tt1 = TTvector{Float64, 2}(2, cores1, dims1, ranks1, zeros(Int, 2))
+
+# Create second TTvector with compatible ranks
+dims2 = (2, 2, 2)
+ranks2 = [1, 2, 2, 1]
+cores2 = [
+    reshape([1.0, 2.0], (2, 1, 1)),
+    reshape([1.0, 2.0, 3.0, 4.0], (2, 1, 2)),
+    reshape([1.0, 2.0, 3.0, 4.0], (2, 2, 1))
+]
+tt2 = TTvector{Float64, 3}(3, cores2, dims2, ranks2, zeros(Int, 3))
+
+# Test concatenation of TTvectors
+result1 = concatenate(tt1, tt2)

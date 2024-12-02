@@ -17,25 +17,22 @@ function source_term(x, y, points)
     return zeros(points, points)
 end
 
-function boundary_term(x, y, points::Int)::Array{Float64,2}
+function boundary_term(cores::Int64, N::Int64)::QTToperator{Float64,2}
     
     bc_left(y) = sin.(y)
     bc_right(y) = cos.(y)
     bc_bottom(x) = exp.(x)
     bc_top(x) = sin.(x)
 
-    b_bottom_top = zeros(points, points)
-    b_left_right = zeros(points, points)
+    boundary_left = lagrange_rank_revealing(bc_left, cores, N)
+    boundary_right = lagrange_rank_revealing(bc_right, cores, N)
+    boundary_top = lagrange_rank_revealing(bc_top, cores, N)
+    boundary_bottom = lagrange_rank_revealing(bc_bottom, cores, N)
 
-    # Apply boundary conditions using broadcasting
-    b_bottom_top[1, :] .= bc_bottom.(x)         # Bottom boundary
-    b_bottom_top[end, :] .= bc_top.(x)          # Top boundary
+    ket_1 = χ(cores, 1, 0)
+    ket_2 = χ(cores, 0, 1)
 
-    b_left_right[:, 1] .= bc_left.(y)           # Left boundary
-    b_left_right[:, end] .= bc_right.(y)        # Right boundary
-
-    # Combine the adjustments for boundary conditions
-    return b_left_right .+ b_bottom_top
+    return 
 end
 
 function solve_Laplace(cores::Int)::Array{Float64,2}
