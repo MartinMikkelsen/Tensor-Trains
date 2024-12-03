@@ -1,3 +1,4 @@
+using TensorTrains
 """
 1d-discrete Laplacian
 """
@@ -353,45 +354,3 @@ function tt2qtt(tt_tensor::TToperator{T,N}, row_dims::Vector{Vector{Int}}, col_d
 
     return qtt_tensor
 end
-
-function χ(c::Int, b1::Int, b2::Int)
-    if c < 1
-        error("c must be at least 1")
-    end
-
-    # Initialize TT ranks
-    r = [1; fill(1, c - 1); 1]  # Ranks: [1, 1, ..., 1]
-
-    # Initialize dimensions
-    dims = ntuple(_ -> 2, c)  # Physical dimensions: (2, 2, ..., 2)
-
-    # Initialize cores
-    cores = Vector{Array{Float64, 3}}(undef, c)
-
-    # First core: size (2, 1, 1)
-    cores[1] = zeros(Float64, 2, 1, 1)
-    cores[1][1, 1, 1] = b1  # Set the first element
-    cores[1][2, 1, 1] = 0.0
-
-    # Intermediate cores (do nothing since ranks are 1)
-    for i in 2:(c - 1)
-        cores[i] = zeros(Float64, 2, 1, 1)
-        cores[i][1, 1, 1] = 1.0
-        cores[i][2, 1, 1] = 1.0
-    end
-
-    # Last core: size (2, 1, 1)
-    cores[c] = zeros(Float64, 2, 1, 1)
-    cores[c][1, 1, 1] = 0.0
-    cores[c][2, 1, 1] = b2  # Set the last element
-
-    # Create and return the TTvector
-    return TTvector{Float64, c}(c, cores, dims, r, zeros(Int64, c))
-end
-
-# Example usage
-c = 5
-b1 = 1
-b2 = 1
-tt_op = χ(c, b1, b2)
-

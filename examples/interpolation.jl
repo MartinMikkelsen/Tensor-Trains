@@ -7,9 +7,9 @@ N = 150
 
 qtt = interpolating_qtt(f, cores, N)
 qtt_rank_revealing = lagrange_rank_revealing(f, cores, N)
-visualize(qtt_rank_revealing)
-is_qtt(qtt)
-is_qtt(qtt_rank_revealing)
+
+visualize(qtt)
+
 
 qtt_values = matricize(qtt, cores)
 qtt_values_rank_revealing = matricize(qtt_rank_revealing, cores)
