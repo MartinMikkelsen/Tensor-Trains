@@ -1,5 +1,4 @@
 using CairoMakie
-using TensorTrains
 
 function delta_tt(cores::Int, position::Int)
     dims = ntuple(_ -> 2, cores)
@@ -38,16 +37,17 @@ function boundary_term(cores::Int64, N::Int64)
     bc_bottom(x) = sin.(π .* x)
     bc_top(x) = cos.(π .* x)
 
+    boundary_left = interpolating_qtt(bc_left, cores, N)
+    boundary_right = interpolating_qtt(bc_right, cores, N)
+    boundary_bottom = interpolating_qtt(bc_bottom, cores, N)
+    boundary_top = interpolating_qtt(bc_top, cores, N)
+
+
     delta_x0 = delta_tt(cores, 1)
     delta_xN = delta_tt(cores, 2^cores)
     delta_y0 = delta_tt(cores, 1)
     delta_yN = delta_tt(cores, 2^cores)
 
-    left_boundary_term = kron_tt(delta_x0, boundary_left)
-    right_boundary_term = kron_tt(delta_xN, boundary_right)
-    bottom_boundary_term = kron_tt(boundary_bottom, delta_y0)
-    top_boundary_term = kron_tt(boundary_top, delta_yN)
-    
     left_boundary_term = kron_tt(delta_x0, boundary_left)
     right_boundary_term = kron_tt(delta_xN, boundary_right)
     bottom_boundary_term = kron_tt(boundary_bottom, delta_y0)
@@ -79,7 +79,6 @@ function solve_Laplace(cores::Int)::Array{Float64,2}
     Q_w = reshape(Q, (2^cores, 2^cores))
     return Q_w
 end
-
 
 cores = 5
 K = solve_Laplace(cores)
